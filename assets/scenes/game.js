@@ -45,20 +45,27 @@ export default class Game extends Phaser.Scene {
 
     // Establecer la nueva velocidad en X de la pelota
     ball.setVelocityX(newVelocityX);
+
+    ball.setVelocityY(-300); // Ajusta la velocidad en el eje Y según tus necesidades
+
 }
 
-  update() {
-    //Move player
-    if (this.cursors.left.isDown) {
-      this.player.setVelocityX(-400);
-    } else {
-      if (this.cursors.right.isDown) {
-        this.player.setVelocityX(400);
-      } else {
-        this.player.setVelocityX(0);
-      }
-    }
+update() {
+  // Move player
+  if (this.cursors.up.isDown) {
+      this.player.setVelocityY(-400); // Mover hacia arriba
+  } else if (this.cursors.down.isDown) {
+      this.player.setVelocityY(400); // Mover hacia abajo
+  } else {
+      this.player.setVelocityY(0);
   }
 
- 
+  if (this.cursors.left.isDown) {
+      this.player.setVelocityX(-400); // Mover hacia la izquierda
+  } else if (this.cursors.right.isDown) {
+      this.player.setVelocityX(400); // Mover hacia la derecha
+  } else {
+      this.player.setVelocityX(0);
+  }
+}
 }
