@@ -1,6 +1,9 @@
 export default class Game extends Phaser.Scene {
   constructor() {
-    super("game");
+      super("game");
+      this.score = 0;
+      this.collisionCount = 0; // Contador de colisiones
+      this.level = 1; // Nivel actual
   }
 
   Init() {}
@@ -31,6 +34,21 @@ export default class Game extends Phaser.Scene {
     // Configurar colisión entre la pelota y el jugador
     this.physics.add.collider(this.ball, this.player, this.handleBallPlayerCollision, null, this);
 
+  // Crear un texto para mostrar la puntuación
+  this.scoreText = this.add.text(16, 16, 'Score: 0', {
+    fontSize: '24px',
+    fill: '#fff'
+});
+
+// Crear un texto para mostrar el nivel en la esquina superior derecha
+this.levelText = this.add.text(this.game.config.width - 16, 16, `Level: ${this.level}`, {
+    fontSize: '24px',
+    fill: '#fff',
+    align: 'right'
+});
+this.levelText.setOrigin(1, 0);
+
+
   }
 
   handleBallPlayerCollision(ball, player) {
@@ -47,6 +65,20 @@ export default class Game extends Phaser.Scene {
     ball.setVelocityX(newVelocityX);
 
     ball.setVelocityY(-300); // Ajusta la velocidad en el eje Y según tus necesidades
+
+    // Aumentar los puntos y actualizar la puntuación en la pantalla
+    this.score += 10; // Ajusta la cantidad de puntos ganados
+    this.scoreText.setText(`Score: ${this.score}`);
+
+    // Aumentar el contador de colisiones
+    this.collisionCount++;
+
+    // Verificar si se debe pasar de nivel
+    if (this.collisionCount >= 10) {
+        this.level++; // Aumentar el nivel
+        this.levelText.setText(`Level: ${this.level}`); // Actualizar el texto del nivel
+        this.collisionCount = 0; // Reiniciar el contador de colisiones
+    }
 
 }
 
