@@ -4,19 +4,27 @@ export default class Game extends Phaser.Scene {
       this.score = 0;
       this.collisionCount = 0; // Contador de colisiones
       this.level = 1; // Nivel actual
+      this.ballSpeed = 200; // Velocidad inicial de la pelota
+
   }
 
   Init() {}
 
   preload() {
-    this.load.image("background", "./assets/image/black.jpg");
+    this.load.image("background", "./assets/image/grey.png");
     this.load.image("paddle", "./assets/image/paddle.png");
     this.load.image("ball", "./assets/image/ball.png");
+    this.load.image("red", "./assets/image/red.png");
+    this.load.image("blue", "./assets/image/blue.png");
+    this.load.image("obstacle", "./assets/image/obstacle.png");
   }
 
   create() {
-    //add background
-    this.add.image(400, 300, "background").setScale(0.555);
+    this.backgroundImage = this.add.image(400, 300, "background");
+    this.backgroundImage.setScale(0.555);
+
+    // Crear variable para el obstáculo
+    this.obstacle = null;
 
     //add player
     this.player = this.physics.add.sprite(300, 800, "paddle");
@@ -29,7 +37,7 @@ export default class Game extends Phaser.Scene {
     this.ball = this.physics.add.sprite(400, 300, "ball");
     this.ball.setCollideWorldBounds(true);
     this.ball.setBounce(1); 
-    this.ball.setVelocity(200, -200); 
+    this.ball.setVelocity(this.ballSpeed, -this.ballSpeed); // Usar la velocidad inicial almacenada
 
     // Configurar colisión entre la pelota y el jugador
     this.physics.add.collider(this.ball, this.player, this.handleBallPlayerCollision, null, this);
@@ -52,19 +60,8 @@ this.levelText.setOrigin(1, 0);
   }
 
   handleBallPlayerCollision(ball, player) {
-    // Calcular la diferencia entre la posición de la pelota y la posición del centro del jugador
-    const offsetX = ball.x - player.x;
-    
-    // Normalizar la diferencia para obtener un valor entre -1 y 1
-    const normalizedOffsetX = offsetX / (player.displayWidth / 2);
 
-    // Establecer la nueva velocidad en X de la pelota en función de la diferencia normalizada
-    const newVelocityX = normalizedOffsetX * 500; // Ajusta la velocidad según tus necesidades
-
-    // Establecer la nueva velocidad en X de la pelota
-    ball.setVelocityX(newVelocityX);
-
-    ball.setVelocityY(-300); // Ajusta la velocidad en el eje Y según tus necesidades
+    ball.setVelocityY(-300); // Ajusta la velocidad en el eje Y
 
     // Aumentar los puntos y actualizar la puntuación en la pantalla
     this.score += 10; // Ajusta la cantidad de puntos ganados
@@ -75,11 +72,40 @@ this.levelText.setOrigin(1, 0);
 
     // Verificar si se debe pasar de nivel
     if (this.collisionCount >= 10) {
-        this.level++; // Aumentar el nivel
-        this.levelText.setText(`Level: ${this.level}`); // Actualizar el texto del nivel
-        this.collisionCount = 0; // Reiniciar el contador de colisiones
-    }
+      this.level++; // Aumentar el nivel
+      this.levelText.setText(`Level: ${this.level}`); // Actualizar el texto del nivel
+      this.collisionCount = 0; // Reiniciar el contador de colisiones
 
+      // Cambiar el fondo a una imagen aleatoria
+      const randomImage = Phaser.Math.RND.pick(["red", "blue", "background"]);
+      this.backgroundImage.setTexture(randomImage);
+
+      // Aumentar la velocidad de la pelota en un 10%
+      this.ballSpeed *= 1.1;
+
+      // Restablecer la velocidad de la pelota con el nuevo valor
+      this.ball.setVelocity(this.ballSpeed, -this.ballSpeed);
+
+      // Crear un obstáculo con tamaño y posición aleatorios
+    const obstacle = this.add.image(
+      Phaser.Math.Between(100, this.game.config.width - 100),
+      Phaser.Math.Between(100, this.game.config.height - 100),
+      "obstacle"
+  );
+  obstacle.setScale(Phaser.Math.FloatBetween(0.5, 1.5));
+
+  // Agregar físicas al obstáculo
+  this.physics.add.existing(obstacle);
+  obstacle.body.setAllowGravity(false); // Desactivar la gravedad para el obstáculo
+  obstacle.body.setImmovable(true); // Hacer que el obstáculo sea inamovible
+
+
+  // Configurar colisión entre la pelota y el obstáculo
+  this.physics.add.collider(this.ball, obstacle);
+  
+  // Configurar colisión entre el jugador y el obstáculo
+  this.physics.add.collider(this.player, obstacle);
+    }
 }
 
 update() {
